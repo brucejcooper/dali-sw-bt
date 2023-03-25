@@ -35,18 +35,94 @@
 #include <rwip_config.h>
 #include <syscntl.h>
 #include <gpio.h>
+#include <spi_flash.h>
+#include "i2c.h"
 
 #include <debug.h>
+
+// Dev Kit flash is 1 Mbit, or 256K.
+#define SPI_FLASH_DEV_SIZE          (256 * 1024)
+
+
+
+
+
+static const spi_flash_cfg_t spi_flash_cfg = {
+    .chip_size = SPI_FLASH_DEV_SIZE,
+};
+
+static const spi_cfg_t spi_cfg = {
+    .spi_ms = SPI_MS_MODE_MASTER,
+    .spi_cp = SPI_CP_MODE_0,
+    .spi_speed = SPI_SPEED_MODE_4MHz,
+    .spi_wsz = SPI_MODE_8BIT,
+    .spi_cs = SPI_CS_0,
+    .cs_pad.port = GPIO_PORT_0,
+    .cs_pad.pin = GPIO_PIN_1,
+    .spi_capture = SPI_MASTER_EDGE_CAPTURE,
+#if defined (CFG_SPI_DMA_SUPPORT)
+    .spi_dma_channel = SPI_DMA_CHANNEL_01,
+    .spi_dma_priority = DMA_PRIO_0,
+#endif
+};
+
+
+
+static const i2c_cfg_t i2c_cfg = {
+    .clock_cfg.ss_hcnt = I2C_SS_SCL_HCNT_REG_RESET,
+    .clock_cfg.ss_lcnt = I2C_SS_SCL_LCNT_REG_RESET,
+    .clock_cfg.fs_hcnt = I2C_FS_SCL_HCNT_REG_RESET,
+    .clock_cfg.fs_lcnt = I2C_FS_SCL_LCNT_REG_RESET,
+    .restart_en = I2C_RESTART_ENABLE,
+    .speed = I2C_SPEED_FAST,
+    .mode = I2C_MODE_MASTER,
+    .addr_mode = I2C_ADDRESSING_7B,
+    .address = 0x20, // Address of MCP230008. assuming all address pins are grounded
+    .tx_fifo_level = 1,
+    .rx_fifo_level = 1
+};
+
+
 
 #if DEVELOPMENT_DEBUG
 void GPIO_reservations(void)
 {
+    // I2C
+    RESERVE_GPIO( I2C_SCL, I2C_SCL_PORT, I2C_SCL_PIN, PID_I2C_SCL);
+    RESERVE_GPIO( I2C_SDA, I2C_SDA_PORT, I2C_SDA_PIN, PID_I2C_SDA);
+    RESERVE_GPIO( I2C_INT, I2C_INT_PORT, I2C_INT_PIN, FUNC_GPIO);
+    RESERVE_GPIO( I2C_RESET, I2C_RESET_PORT, I2C_RESET_PIN, FUNC_GPIO);
+
+
+#if defined (CFG_SPI_FLASH_ENABLE)
+    // SPI FLASH
+    RESERVE_GPIO(SPI_EN,  SPI_EN_PORT,  SPI_EN_PIN,  PID_SPI_EN);
+    RESERVE_GPIO(SPI_CLK, SPI_CLK_PORT, SPI_CLK_PIN, PID_SPI_CLK);
+    RESERVE_GPIO(SPI_DO,  SPI_DO_PORT,  SPI_DO_PIN,  PID_SPI_DO);
+    RESERVE_GPIO(SPI_DI,  SPI_DI_PORT,  SPI_DI_PIN,  PID_SPI_DI);
+#endif
+
 }
 #endif
 
 static void set_pad_functions(void)
 {
+#if defined (CFG_SPI_FLASH_ENABLE)
+    // SPI Flash
+    GPIO_ConfigurePin(SPI_EN_PORT,  SPI_EN_PIN,  OUTPUT, PID_SPI_EN,  true);
+    GPIO_ConfigurePin(SPI_CLK_PORT, SPI_CLK_PIN, OUTPUT, PID_SPI_CLK, false);
+    GPIO_ConfigurePin(SPI_DO_PORT,  SPI_DO_PIN,  OUTPUT, PID_SPI_DO,  false);
+    GPIO_ConfigurePin(SPI_DI_PORT,  SPI_DI_PIN,  INPUT,  PID_SPI_DI,  false);
+#endif
+
+    // I2C
+    GPIO_ConfigurePin(I2C_SCL_PORT, I2C_SCL_PIN, INPUT, PID_I2C_SCL, false);
+    GPIO_ConfigurePin(I2C_SDA_PORT, I2C_SDA_PIN, INPUT, PID_I2C_SDA, false);
+    GPIO_ConfigurePin(I2C_INT_PORT, I2C_INT_PIN, INPUT_PULLUP, FUNC_GPIO, false);
+    GPIO_ConfigurePin(I2C_RESET_PORT, I2C_RESET_PIN, OUTPUT, FUNC_GPIO, false); // This will start out reset
+
 }
+
 
 void periph_init(void)
 {
@@ -79,4 +155,19 @@ void periph_init(void)
         isSeggerInitialized = true;
     }
 #endif
+
+#if defined (CFG_SPI_FLASH_ENABLE)
+    spi_flash_configure_env(&spi_flash_cfg);
+
+    // Initialize SPI
+    spi_initialize(&spi_cfg);
+#endif
+
+
+    // We use i2c for GPIO on a MCP230008
+    i2c_init(&i2c_cfg);
+
+
+    // Configure would have started it disabled.  Now set it to enabled.
+    GPIO_SetActive(I2C_RESET_PORT, I2C_RESET_PIN);
 }

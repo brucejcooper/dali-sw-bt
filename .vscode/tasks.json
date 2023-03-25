@@ -1,0 +1,22 @@
+
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "${workspaceFolder}/build-linux.sh",
+            "args": [
+                "/opt/arm-gnu-toolchain-12.2.rel1-x86_64-arm-none-eabi",
+                "${workspaceFolder}/../DA145xx_SDK/6.0.18.1182.1"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

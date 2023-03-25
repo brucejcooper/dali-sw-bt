@@ -50,6 +50,7 @@
 #include "prf_types.h"
 #include "attm_db_128.h"
 #include "user_custs1_def.h"
+#include "attm.h"
 
 /*
  * LOCAL VARIABLE DEFINITIONS
@@ -59,7 +60,11 @@
 // Service 1 of the custom server 1
 static const att_svc_desc128_t custs1_svc1                          = DEF_SVC1_UUID_128;
 
-static const uint8_t SVC1_CTRL_POINT_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_CTRL_POINT_UUID_128;
+static const uint8_t SVC1_TARGET_1_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_1_UUID_128;
+static const uint8_t SVC1_TARGET_2_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_2_UUID_128;
+static const uint8_t SVC1_TARGET_3_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_3_UUID_128;
+static const uint8_t SVC1_TARGET_4_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_4_UUID_128;
+static const uint8_t SVC1_TARGET_5_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_5_UUID_128;
 
 // Attribute specifications
 static const uint16_t att_decl_svc       = ATT_DECL_PRIMARY_SERVICE;
@@ -76,6 +81,12 @@ const uint8_t custs1_services[]  = {SVC1_IDX_SVC, CUSTS1_IDX_NB};
 const uint8_t custs1_services_size = ARRAY_LEN(custs1_services) - 1;
 const uint16_t custs1_att_max_nb = CUSTS1_IDX_NB;
 
+uint8_t target1 = 0xFF;
+uint8_t target2 = 0xFF;
+uint8_t target3 = 0xFF;
+uint8_t target4 = 0xFF;
+uint8_t target5 = 0xFF;
+
 /// Full CUSTS1 Database Description - Used to add attributes into the database
 const struct attm_desc_128 custs1_att_db[CUSTS1_IDX_NB] =
 {
@@ -85,16 +96,34 @@ const struct attm_desc_128 custs1_att_db[CUSTS1_IDX_NB] =
      */
 
     // Service 1 Declaration
-    [SVC1_IDX_SVC]                      = {(uint8_t*)&att_decl_svc, ATT_UUID_128_LEN, PERM(WR, ENABLE), sizeof(custs1_svc1), sizeof(custs1_svc1), (uint8_t*)&custs1_svc1},
+    [SVC1_IDX_SVC]                        = {(uint8_t*)&att_decl_svc, ATT_UUID_128_LEN, PERM(WR, ENABLE), sizeof(custs1_svc1), sizeof(custs1_svc1), (uint8_t*)&custs1_svc1},
 
-    // Control Point Characteristic Declaration
-    [SVC1_IDX_CONTROL_POINT_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
-    // Control Point Characteristic Value
-    [SVC1_IDX_CONTROL_POINT_VAL]        = {SVC1_CTRL_POINT_UUID_128, ATT_UUID_128_LEN, PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE) | PERM(WRITE_COMMAND, ENABLE) | PERM(NTF, ENABLE), DEF_SVC1_CTRL_POINT_CHAR_LEN, 0, NULL},
-    // Control Point Client Characteristic Configuration Descriptor
-    [SVC1_IDX_CONTROL_POINT_NTF_CFG]    = {(uint8_t*)&att_desc_cfg, ATT_UUID_16_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE) | PERM(WRITE_COMMAND, ENABLE), sizeof(uint16_t), 0, NULL},
-    // Control Point Characteristic User Description
-    [SVC1_IDX_CONTROL_POINT_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_CONTROL_POINT_USER_DESC) - 1, sizeof(DEF_SVC1_CONTROL_POINT_USER_DESC) - 1, (uint8_t*)DEF_SVC1_CONTROL_POINT_USER_DESC},
+    // Switch 1 Characteristic
+    [SVC1_IDX_SWITCH_TARGET_1_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+    [SVC1_IDX_SWITCH_TARGET_1_VAL]        = {SVC1_TARGET_1_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), DEF_SVC1_SWITCH_TARGET_1_CHAR_MAX_LEN, 1, &target1},
+    [SVC1_IDX_SWITCH_TARGET_1_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_SWITCH_TARGET_1_USER_DESC) - 1, sizeof(DEF_SVC1_SWITCH_TARGET_1_USER_DESC) - 1, (uint8_t*)DEF_SVC1_SWITCH_TARGET_1_USER_DESC},
+
+    // Switch 2 Characteristic
+    [SVC1_IDX_SWITCH_TARGET_2_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+    [SVC1_IDX_SWITCH_TARGET_2_VAL]        = {SVC1_TARGET_2_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), DEF_SVC1_SWITCH_TARGET_2_CHAR_MAX_LEN, 1, &target2},
+    [SVC1_IDX_SWITCH_TARGET_2_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_SWITCH_TARGET_2_USER_DESC) - 1, sizeof(DEF_SVC1_SWITCH_TARGET_2_USER_DESC) - 1, (uint8_t*)DEF_SVC1_SWITCH_TARGET_2_USER_DESC},
+
+    // Switch 3 Characteristic
+    [SVC1_IDX_SWITCH_TARGET_3_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+    [SVC1_IDX_SWITCH_TARGET_3_VAL]        = {SVC1_TARGET_3_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), DEF_SVC1_SWITCH_TARGET_3_CHAR_MAX_LEN, 1, &target3},
+    [SVC1_IDX_SWITCH_TARGET_3_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_SWITCH_TARGET_3_USER_DESC) - 1, sizeof(DEF_SVC1_SWITCH_TARGET_3_USER_DESC) - 1, (uint8_t*)DEF_SVC1_SWITCH_TARGET_3_USER_DESC},
+
+    // Switch 4 Characteristic
+    [SVC1_IDX_SWITCH_TARGET_4_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+    [SVC1_IDX_SWITCH_TARGET_4_VAL]        = {SVC1_TARGET_4_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), DEF_SVC1_SWITCH_TARGET_4_CHAR_MAX_LEN, 1, &target4},
+    [SVC1_IDX_SWITCH_TARGET_4_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_SWITCH_TARGET_4_USER_DESC) - 1, sizeof(DEF_SVC1_SWITCH_TARGET_4_USER_DESC) - 1, (uint8_t*)DEF_SVC1_SWITCH_TARGET_4_USER_DESC},
+
+    // Switch 5 Characteristic
+    [SVC1_IDX_SWITCH_TARGET_5_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+    [SVC1_IDX_SWITCH_TARGET_5_VAL]        = {SVC1_TARGET_5_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), DEF_SVC1_SWITCH_TARGET_5_CHAR_MAX_LEN, 1, &target5},
+    [SVC1_IDX_SWITCH_TARGET_5_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_SWITCH_TARGET_5_USER_DESC) - 1, sizeof(DEF_SVC1_SWITCH_TARGET_5_USER_DESC) - 1, (uint8_t*)DEF_SVC1_SWITCH_TARGET_5_USER_DESC},
+
+
 };
 
 /// @} USER_CONFIG

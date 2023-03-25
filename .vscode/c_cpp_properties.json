@@ -1,0 +1,30 @@
+{
+    "env": {
+        "renesas_sdk": "${workspaceFolder}/../DA145xx_SDK/6.0.18.1182.1",
+        "gnu_toolchain": "/opt/arm-gnu-toolchain-12.2.rel1-x86_64-arm-none-eabi"
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${renesas_sdk}/sdk/**"
+            ],
+            "defines": [
+                "__DA14531__",
+                "DEBUG_SEGGER",
+                "BLE_CUSTOM1_SERVER",
+                "BLE_CUSTOM_SERVER",
+                "BLE_APP_PRESENT",
+                "CFG_SPI_FLASH_ENABLE",
+                "CFG_DEVELOPMENT_DEBUG"
+            ],
+            "compilerPath": "${gnu_toolchain}/bin/arm-none-eabi-gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-arm",
+            "configurationProvider": "ms-vscode.makefile-tools"
+        }
+    ],
+    "version": 4
+}

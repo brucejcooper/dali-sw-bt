@@ -3,16 +3,16 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef DEBUG_SEGGER
     #include <SEGGER_RTT.h>
 
     #define DEBUG_PRINT_STRING(str) SEGGER_RTT_WriteString(0, (str));
-    #define DEBUG_PRINTF(...) SEGGER_RTT_printf(0, __VA_ARGS__);
+    #define DEBUG_PRINT_INT(val) { char buf[16]; itoa(val, buf, 16); SEGGER_RTT_WriteString(0, buf); } 
 #else
     #define DEBUG_PRINT_STRING(str)
-    #define DEBUG_PRINTF(...)
+    #define DEBUG_PRINT_INT(...)
 #endif
 
 void Debug_CrashHandler(void);

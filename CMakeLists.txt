@@ -20,15 +20,16 @@ add_executable(${PROJECT_NAME}
     ${DIALOG_SDK_SOURCES}
     # Libraries
     Libraries/RTT/SEGGER_RTT.c
-    Libraries/RTT/SEGGER_RTT_printf.c
+    #Libraries/RTT/SEGGER_RTT_printf.c
     # Components
-    components/debug/src/debug.c
+    #components/debug/src/debug.c
     # Source
     src/user_custs_config.c
     src/user_custs1_def.c
     src/user_periph_setup.c
-    src/printf_gcc.c
+    # src/printf_gcc.c
     src/interrupts.c
+    src/buttons.c
     src/user_app.c
     src/ble_handlers.c
     src/user_app.c

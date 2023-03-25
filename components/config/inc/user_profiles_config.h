@@ -54,12 +54,30 @@
 /* Used BLE profiles (used by "rwprf_config.h").                                       */
 /***************************************************************************************/
 
-//#define CFG_PRF_DISS
+#define CFG_PRF_DISS
+#define CFG_PRF_SUOTA
 #define CFG_PRF_CUST1
 
 /***************************************************************************************/
 /* Profile application configuration section                                           */
 /***************************************************************************************/
+
+
+
+/************************************************************
+ * SUOTA security requirements (@see app_prf_srv_perm)
+ *
+ * - SRV_PERM_DISABLE       Disable access
+ * - SRV_PERM_ENABLE        Enable access
+ * - SRV_PERM_UNAUTH        Access Requires Unauthenticated link
+ * - SRV_PERM_AUTH          Access Requires Authenticated link
+ * - SRV_PERM_SECURE        Access Requires Authenticated Secure Connection Pairing
+ *
+ * Select only one option.
+ ************************************************************
+ */
+#define APP_SUOTA_SEC_REQ  SRV_PERM_UNAUTH
+
 
 /*
  ****************************************************************************************
@@ -75,16 +93,12 @@
                                         DIS_PNP_ID_CHAR_SUP)
 
 /// Manufacturer Name (up to 18 chars)
-#define APP_DIS_MANUFACTURER_NAME       ("Dialog Semi")
-#define APP_DIS_MANUFACTURER_NAME_LEN   (11)
+#define APP_DIS_MANUFACTURER_NAME       ("CCPEED")
+#define APP_DIS_MANUFACTURER_NAME_LEN   (6)
 
 /// Model Number String (up to 18 chars)
-#ifdef __DA14586__
-#define APP_DIS_MODEL_NB_STR            ("DA14586")
-#else
-#define APP_DIS_MODEL_NB_STR            ("DA14531")
-#endif
-#define APP_DIS_MODEL_NB_STR_LEN        (7)
+#define APP_DIS_MODEL_NB_STR            ("DALISW01")
+#define APP_DIS_MODEL_NB_STR_LEN        (8)
 
 /// System ID - LSB -> MSB
 #define APP_DIS_SYSTEM_ID               ("\x12\x34\x56\xFF\xFE\x9A\xBC\xDE")
@@ -98,8 +112,8 @@
 #define APP_DIS_SERIAL_NB_STR_LEN       (10)
 
 /// Hardware Revision String
-#define APP_DIS_HARD_REV_STR            ("DA14531")
-#define APP_DIS_HARD_REV_STR_LEN        (7)
+#define APP_DIS_HARD_REV_STR            ("01")
+#define APP_DIS_HARD_REV_STR_LEN        (2)
 
 /// Firmware Revision
 #define APP_DIS_FIRM_REV_STR            SDK_VERSION

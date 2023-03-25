@@ -10,12 +10,14 @@
 #include <custs1_task.h>
 #include <user_custs1_def.h>
 #include <user_custs1_def.h>
+#include <gapm_task.h>
+#include <gapc_task.h>
 
 #include <debug.h>
-
+/*
 static const char* msgidToString(ke_msg_id_t msgid)
 {
-    const char* result = "undefined";
+    const char* result = NULL;
     switch (msgid)
     {
         case CUSTS1_CREATE_DB_REQ:
@@ -93,6 +95,14 @@ static const char* msgidToString(ke_msg_id_t msgid)
             result = "CUSTS1_ATT_INFO_RSP";
             break;
         }
+        case GAPM_CMP_EVT:
+        {
+            result = "GAPM Command complete";
+            break;
+        }
+        case GAPC_PARAM_UPDATED_IND:
+            result = "connection parameters udpated";
+            break;
         default:
         {
             break;
@@ -100,6 +110,8 @@ static const char* msgidToString(ke_msg_id_t msgid)
     }
     return result;
 }
+*/
+
 
 void user_catch_rest_hndl(ke_msg_id_t const msgid, void const *param, ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
@@ -107,7 +119,17 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid, void const *param, ke_task_id
     {
         default:
         {
-            printf("handler: %s\r\n", msgidToString(msgid));
+            // We are receiving a Generic Task Layer handler mssg. 
+            // char *msg = (char *) msgidToString(msgid);
+            // if (msg) {
+            //     DEBUG_PRINT_STRING("handler: ");
+            //     DEBUG_PRINT_STRING(msg);
+            // } else {
+                DEBUG_PRINT_STRING("handler: ");
+                DEBUG_PRINT_INT(msgid);
+            // }
+            DEBUG_PRINT_STRING("\r\n");
+
             break;
         }
     }
@@ -115,12 +137,12 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid, void const *param, ke_task_id
 
 void user_on_connection(uint8_t connection_idx, struct gapc_connection_req_ind const *param)
 {
-    printf("user_on_connection()\r\n");
+    DEBUG_PRINT_STRING("user_on_connection()\r\n");
     default_app_on_connection(connection_idx, param);
 }
 
 void user_on_disconnect( struct gapc_disconnect_ind const *param )
 {
-    printf("user_on_disconnect()\r\n");
+    DEBUG_PRINT_STRING("user_on_disconnect()\r\n");
     default_app_on_disconnect(param);
 }

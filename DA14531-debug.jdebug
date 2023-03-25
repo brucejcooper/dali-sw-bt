@@ -5,18 +5,19 @@ __constant U32 SYS_RAM3 = 0x07FC7000;
 
 void OnProjectLoad()
 {
-    // Disable RTT to be able to use SystemView simultaneously
-    Project.SetRTT(0);
-    // Set the target MCU
-    Project.SetDevice("Cortex-M0+");
-    Project.SetHostIF("USB", "");
-    Project.SetTargetIF("SWD");
-    Project.SetTIFSpeed("1 MHz");
-    Project.AddSvdFile("Cortex-M0.svd");
-    Project.SetPeripheralFile("$(ProjectDir)/DA14531.svd");
-    Project.AddSearchPath(".");
-    // elf-like project file
-    File.Open("$(ProjectDir)/build/DA14531_App.elf");
+  Edit.SysVar (VAR_RTT_ENABLED, 1);
+  // Disable RTT to be able to use SystemView simultaneously
+  Project.SetRTT(1);
+  // Set the target MCU
+  Project.SetDevice("Cortex-M0+");
+  Project.SetHostIF("USB", "");
+  Project.SetTargetIF("SWD");
+  Project.SetTIFSpeed("1 MHz");
+  Project.AddSvdFile("Cortex-M0.svd");
+  Project.SetPeripheralFile("$(ProjectDir)/DA14531.svd");
+  Project.AddSearchPath(".");
+  // elf-like project file
+  File.Open("$(ProjectDir)/build/DA14531_App.elf");
 }
 
 void TargetDownload(void) {

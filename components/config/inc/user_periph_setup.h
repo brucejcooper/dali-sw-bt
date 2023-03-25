@@ -43,7 +43,37 @@
 #include "uart.h"
 #include "gpio.h"
 
+
+
+
+#define SPI_EN_PORT GPIO_PORT_0
+#define SPI_EN_PIN GPIO_PIN_1
+#define SPI_CLK_PORT GPIO_PORT_0
+#define SPI_CLK_PIN GPIO_PIN_4
+#define SPI_DO_PORT GPIO_PORT_0
+#define SPI_DO_PIN GPIO_PIN_0
+#define SPI_DI_PORT GPIO_PORT_0
+#define SPI_DI_PIN GPIO_PIN_3
+
+#define I2C_SCL_PORT                GPIO_PORT_0
+#define I2C_SCL_PIN                 GPIO_PIN_11
+
+#define I2C_SDA_PORT                GPIO_PORT_0
+#define I2C_SDA_PIN                 GPIO_PIN_8
+
+// Use P05 as the Interrupt line - it leaves SWD and SPI free, and is the only Type-B port left.  For production we could turn of JTAG and us P02 insetad
+#define I2C_INT_PORT                GPIO_PORT_0
+#define I2C_INT_PIN                 GPIO_PIN_5
+
+// Use P09 as the chip reset line.
+#define I2C_RESET_PORT                GPIO_PORT_0
+#define I2C_RESET_PIN                 GPIO_PIN_9
+
+
+
 void periph_init(void);
 void GPIO_reservations(void);
+
+
 
 #endif // _USER_PERIPH_SETUP_H_

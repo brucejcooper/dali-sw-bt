@@ -113,7 +113,7 @@ static const struct app_callbacks user_app_callbacks = {
     .app_on_update_params_complete      = NULL,
     .app_on_set_dev_config_complete     = default_app_on_set_dev_config_complete,
     .app_on_adv_nonconn_complete        = NULL,
-    .app_on_adv_undirect_complete       = NULL,
+    .app_on_adv_undirect_complete       = app_advertise_complete,
     .app_on_adv_direct_complete         = NULL,
     .app_on_db_init_complete            = default_app_on_db_init_complete,
     .app_on_scanning_completed          = NULL,
@@ -186,9 +186,9 @@ static const struct arch_main_loop_callbacks user_app_main_loop_callbacks = {
     .app_on_system_powered  = app_on_system_powered,
 
     .app_before_sleep       = NULL,
-    .app_validate_sleep     = app_validate_sleep,
-    .app_going_to_sleep     = app_going_to_sleep,
-    .app_resume_from_sleep  = app_resume_from_sleep,
+    .app_validate_sleep     = NULL,
+    .app_going_to_sleep     = NULL,
+    .app_resume_from_sleep  = NULL,
 };
 
 //place in this structure the app_<profile>_db_create and app_<profile>_enable functions

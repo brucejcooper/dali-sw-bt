@@ -11,12 +11,17 @@
 #include <user_periph_setup.h>
 #include <ble_handlers.h>
 #include <debug.h>
+#include <spi_flash.h>
+#include "buttons.h"
 
 /*
 This function is called as a callback by system arch, after peripheral init, and app init, but before giving away to the kernel and main loop
 */
 void app_on_init(void)
 {
+  	spi_flash_power_down();
+
+    
     // To keep compatibility call default handler
     default_app_on_init();
 
@@ -28,28 +33,33 @@ void app_on_init(void)
     uint32_t heap_base = (uint32_t)&__HeapBase;
     uint32_t heap_limit = (uint32_t)&__HeapLimit;
 
-    printf("app_on_init()\r\n");
-    printf("Compiled: %s %s\r\n", __DATE__, __TIME__);
-    printf("stack: 0x%08lX\r\n", initial_sp);
-    printf("heap: 0x%08lX (0x%04X)\r\n", heap_base, (uint16_t)heap_limit);
+    DEBUG_PRINT_STRING("app_on_init()\r\n");
+    // printf("Compiled: %s %s\r\n", __DATE__, __TIME__);
+    // printf("stack: 0x%08lX\r\n", initial_sp);
+    // printf("heap: 0x%08lX (0x%04X)\r\n", heap_base, (uint16_t)heap_limit);
+    ioexp_configure();
 }
 
-void app_resume_from_sleep(void)
+
+
+
+void app_advertise_complete(const uint8_t status)
 {
+    // Called when a user connects, or if the advertising stops due to timeout.
+    if (status == GAP_ERR_CANCELED)
+    {
+        DEBUG_PRINT_STRING("Advertising Timeout\r\n");
+
+        // app_easy_wakeup_set(app_wakeup_cb);
+
+    }
 }
+
 
 arch_main_loop_callback_ret_t app_on_system_powered(void)
 {
     wdg_reload(1);
     return KEEP_POWERED;
-}
 
-sleep_mode_t app_validate_sleep(sleep_mode_t sleep_mode)
-{
-    /* Block sleep. */
-    return mode_active;
-}
-
-void app_going_to_sleep(sleep_mode_t sleep_mode)
-{
+    // return GOTO_SLEEP;
 }

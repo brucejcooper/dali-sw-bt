@@ -1,0 +1,26 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../DA145xx_SDK"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"ke_msg.h": "c",
+			"user_custs1_def.h": "c",
+			"debug.h": "c",
+			"attm_db_128.h": "c",
+			"stdint.h": "c",
+			"ke_task.h": "c",
+			"att.h": "c",
+			"stdlib.h": "c",
+			"segger_rtt.h": "c",
+			"da1458x_stack_config.h": "c",
+			"user_periph_setup.h": "c",
+			"app_easy_timer.h": "c"
+		}
+	}
+}
