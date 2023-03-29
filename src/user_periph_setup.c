@@ -37,6 +37,7 @@
 #include <gpio.h>
 #include <spi_flash.h>
 #include "i2c.h"
+#include <buttons.h>
 
 #include <debug.h>
 
@@ -65,7 +66,6 @@ static const spi_cfg_t spi_cfg = {
     .spi_dma_priority = DMA_PRIO_0,
 #endif
 };
-
 
 
 static const i2c_cfg_t i2c_cfg = {
@@ -116,10 +116,11 @@ static void set_pad_functions(void)
 #endif
 
     // I2C
-    GPIO_ConfigurePin(I2C_SCL_PORT, I2C_SCL_PIN, INPUT, PID_I2C_SCL, false);
-    GPIO_ConfigurePin(I2C_SDA_PORT, I2C_SDA_PIN, INPUT, PID_I2C_SDA, false);
-    GPIO_ConfigurePin(I2C_INT_PORT, I2C_INT_PIN, INPUT_PULLUP, FUNC_GPIO, false);
-    GPIO_ConfigurePin(I2C_RESET_PORT, I2C_RESET_PIN, OUTPUT, FUNC_GPIO, false); // This will start out reset
+    GPIO_ConfigurePin(I2C_SCL_PORT, I2C_SCL_PIN, INPUT_PULLUP, PID_I2C_SCL, false);
+    GPIO_ConfigurePin(I2C_SDA_PORT, I2C_SDA_PIN, INPUT_PULLUP, PID_I2C_SDA, false);
+    GPIO_ConfigurePin(I2C_INT_PORT, I2C_INT_PIN, INPUT, FUNC_GPIO, false);
+    GPIO_ConfigurePin(I2C_RESET_PORT, I2C_RESET_PIN, OUTPUT, FUNC_GPIO, true); // chip is reset on low
+
 
 }
 
@@ -128,7 +129,6 @@ void periph_init(void)
 {
     // Disable HW RST on P0_0
     GPIO_Disable_HW_Reset();
-
     // Enable DC/DC buck mode
     if (syscntl_dcdc_turn_on_in_buck(SYSCNTL_DCDC_LEVEL_1V1) != 0)
     {
@@ -156,6 +156,11 @@ void periph_init(void)
     }
 #endif
 
+    // We use i2c for GPIO on a MCP230008
+    i2c_init(&i2c_cfg);
+    GPIO_RegisterCallback(GPIO0_IRQn, ioexp_int_callback);
+
+
 #if defined (CFG_SPI_FLASH_ENABLE)
     spi_flash_configure_env(&spi_flash_cfg);
 
@@ -163,11 +168,4 @@ void periph_init(void)
     spi_initialize(&spi_cfg);
 #endif
 
-
-    // We use i2c for GPIO on a MCP230008
-    i2c_init(&i2c_cfg);
-
-
-    // Configure would have started it disabled.  Now set it to enabled.
-    GPIO_SetActive(I2C_RESET_PORT, I2C_RESET_PIN);
 }

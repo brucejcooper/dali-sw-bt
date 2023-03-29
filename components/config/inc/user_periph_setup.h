@@ -67,8 +67,7 @@
 
 // Use P09 as the chip reset line.
 #define I2C_RESET_PORT                GPIO_PORT_0
-#define I2C_RESET_PIN                 GPIO_PIN_9
-
+#define I2C_RESET_PIN                 GPIO_PIN_7
 
 
 void periph_init(void);

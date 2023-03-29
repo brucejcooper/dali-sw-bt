@@ -127,8 +127,8 @@ void user_catch_rest_hndl(ke_msg_id_t const msgid, void const *param, ke_task_id
             // } else {
                 DEBUG_PRINT_STRING("handler: ");
                 DEBUG_PRINT_INT(msgid);
+                DEBUG_PRINT_STRING("\r\n");
             // }
-            DEBUG_PRINT_STRING("\r\n");
 
             break;
         }

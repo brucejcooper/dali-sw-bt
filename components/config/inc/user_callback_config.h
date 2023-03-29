@@ -187,8 +187,8 @@ static const struct arch_main_loop_callbacks user_app_main_loop_callbacks = {
 
     .app_before_sleep       = NULL,
     .app_validate_sleep     = NULL,
-    .app_going_to_sleep     = NULL,
-    .app_resume_from_sleep  = NULL,
+    .app_going_to_sleep     = app_going_to_sleep,
+    .app_resume_from_sleep  = app_resume_from_sleep,
 };
 
 //place in this structure the app_<profile>_db_create and app_<profile>_enable functions

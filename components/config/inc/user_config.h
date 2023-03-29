@@ -311,8 +311,8 @@ static const struct default_handlers_configuration  user_default_hnd_conf = {
     // It is measured in timer units (3 min). Use MS_TO_TIMERUNITS macro to convert
     // from milliseconds (ms) to timer units.
 
-    // Device advertises for 15 seconds after boot
-    .advertise_period = MS_TO_TIMERUNITS(180000), // Temporarily set to 3 minutes.
+    // Device advertises for 20 seconds after boot, and each time a button is pressed.
+    .advertise_period = MS_TO_TIMERUNITS(20000),
 
     // Configure the security start operation of the default handlers
     // if the security is enabled (CFG_APP_SECURITY)

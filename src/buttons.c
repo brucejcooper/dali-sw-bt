@@ -5,7 +5,7 @@
 #include "debug.h"
 #include "user_periph_setup.h"
 #include <app_easy_timer.h>
-
+#include "user_app.h"
 
 /* I/O Direction*/
 #define IOEXP_REG_DIRECTION         0x00
@@ -37,12 +37,14 @@
 #define IOEXP_REG_IOCON                         0x05
 /* IF active driver and this is 1, interupt is active high, otherwise active low*/
 #define IOEXP_IOCON_INT_POLARITY_HIGH           0x02
+#define IOEXP_IOCON_INT_POLARITY_LOW            0x00
 /* If set, IF set, Interrupt pin is Open Drain */
 #define IOEXP_IOCON_INT_OPEN_DRAIN              0x04
+#define IOEXP_IOCON_INT_ACTIVE_DRIVE            0x00
 /* If set, Slew rate is disabled*/
 #define IOEXP_IOCON_DISABLE_SLEW_RATE           0x10
 /* If set, sequential read is disabled */
-#define IOEXP_IOCON_DISABLE_SEQUENCTIAL_READ    0x20
+#define IOEXP_IOCON_DISABLE_SEQUENTIAL_READ    0x20
 
 
 
@@ -97,8 +99,12 @@ typedef enum {
 } button_evt_t;
 
 
+
+
+
+
 /**
- * @brief Timings, in 10ms ticks of when things happen with buttons. 
+ * @brief Timings, in 10ms ticks of when things happen with buttons. These should be exposed as characteristics.
  * 
  */
 #define DEBOUNCE_TICKS 1
@@ -289,7 +295,7 @@ static void change_state(button_t *b, button_state_t new_state, uint32_t delay) 
 }
 
 
-static void read_buttons() {
+void read_buttons() {
     uint8_t new_buttons = ioexp_reread();
     uint8_t changed = new_buttons ^ current_buttons;
     if (changed) {
@@ -312,8 +318,27 @@ void ioexp_int_callback(void)
 }
 
 
+bool buttons_idle() {
+    // DEBUG_PRINT_STRING("Button states =\r\n");
+    for (int i = 0; i < 5; i++) {
+        // DEBUG_PRINT_STRING(" ");
+        // DEBUG_PRINT_INT(buttons[i].state);
+        if (buttons[i].state != STATE_RELEASED) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 void ioexp_configure() {
+    // Reset the device.
+    GPIO_SetInactive(I2C_RESET_PORT, I2C_RESET_PIN);
+    usDelay(1);
+    GPIO_SetActive(I2C_RESET_PORT, I2C_RESET_PIN);
+    usDelay(5);
+
+
     // Turn switches into inputs with pullups - last three bits are left for LEDs. 
     write_reg(IOEXP_REG_PULL_UP, SWITCHES_bm);
     write_reg(IOEXP_REG_DIRECTION, SWITCHES_bm);
@@ -325,7 +350,11 @@ void ioexp_configure() {
     write_reg(IOEXP_REG_INT_ON_CHANGE, SWITCHES_bm);
 
     // Disable Auto-increment so we can just read the GPIO over and over.
-    write_reg(IOEXP_REG_IOCON, IOEXP_IOCON_DISABLE_SEQUENCTIAL_READ);
+    write_reg(IOEXP_REG_IOCON, 
+                IOEXP_IOCON_INT_ACTIVE_DRIVE | 
+                IOEXP_IOCON_INT_POLARITY_LOW | 
+                IOEXP_IOCON_DISABLE_SEQUENTIAL_READ
+    );
 
 
     // Read the value right now, before we set interrupts.  We do this to clear out any existing interrupt.
@@ -341,10 +370,10 @@ void ioexp_configure() {
         
     }
 
-    GPIO_RegisterCallback(GPIO0_IRQn, ioexp_int_callback);
-    GPIO_EnableIRQ(I2C_INT_PORT, I2C_INT_PIN, GPIO0_IRQn, true, true, 0);
-
+    // GPIO_EnableIRQ(I2C_INT_PORT, I2C_INT_PIN, GPIO0_IRQn, true, true, 0);
 }
+
+void buttons_sleep() {}
 
 
 /**
