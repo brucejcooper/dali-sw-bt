@@ -36,13 +36,14 @@
 #include <syscntl.h>
 #include <gpio.h>
 #include <spi_flash.h>
-#include "i2c.h"
-#include <buttons.h>
+#include <uart.h>
 
 #include <debug.h>
 
 // Dev Kit flash is 1 Mbit, or 256K.
 #define SPI_FLASH_DEV_SIZE          (256 * 1024)
+
+
 
 
 
@@ -68,18 +69,32 @@ static const spi_cfg_t spi_cfg = {
 };
 
 
-static const i2c_cfg_t i2c_cfg = {
-    .clock_cfg.ss_hcnt = I2C_SS_SCL_HCNT_REG_RESET,
-    .clock_cfg.ss_lcnt = I2C_SS_SCL_LCNT_REG_RESET,
-    .clock_cfg.fs_hcnt = I2C_FS_SCL_HCNT_REG_RESET,
-    .clock_cfg.fs_lcnt = I2C_FS_SCL_LCNT_REG_RESET,
-    .restart_en = I2C_RESTART_ENABLE,
-    .speed = I2C_SPEED_FAST,
-    .mode = I2C_MODE_MASTER,
-    .addr_mode = I2C_ADDRESSING_7B,
-    .address = 0x20, // Address of MCP230008. assuming all address pins are grounded
-    .tx_fifo_level = 1,
-    .rx_fifo_level = 1
+// Configuration struct for UART
+static const uart_cfg_t uart_cfg = {
+    // Set Baud Rate
+    .baud_rate = UART_BAUDRATE_115200,
+    // Set data bits
+    .data_bits = UART_DATABITS_8,
+    // Set parity
+    .parity = UART_PARITY_EVEN,
+    // Set stop bits
+    .stop_bits = UART_STOPBITS_2,
+    // Set flow control
+    .auto_flow_control = UART_AFCE_DIS,
+    // Set FIFO enable
+    .use_fifo = UART_FIFO_EN,
+    // Set Tx FIFO trigger level
+    .tx_fifo_tr_lvl = UART_TX_FIFO_LEVEL_0,
+    // Set Rx FIFO trigger level
+    .rx_fifo_tr_lvl = UART_RX_FIFO_LEVEL_0,
+    // Set interrupt priority
+    .intr_priority = 2,
+#if defined (CFG_UART_DMA_SUPPORT)
+    // Set UART DMA Channel Pair Configuration
+    .uart_dma_channel = UART_DMA_CHANNEL_01,
+    // Set UART DMA Priority
+    .uart_dma_priority = DMA_PRIO_0,
+#endif
 };
 
 
@@ -88,11 +103,8 @@ static const i2c_cfg_t i2c_cfg = {
 void GPIO_reservations(void)
 {
     // I2C
-    RESERVE_GPIO( I2C_SCL, I2C_SCL_PORT, I2C_SCL_PIN, PID_I2C_SCL);
-    RESERVE_GPIO( I2C_SDA, I2C_SDA_PORT, I2C_SDA_PIN, PID_I2C_SDA);
-    RESERVE_GPIO( I2C_INT, I2C_INT_PORT, I2C_INT_PIN, FUNC_GPIO);
-    RESERVE_GPIO( I2C_RESET, I2C_RESET_PORT, I2C_RESET_PIN, FUNC_GPIO);
-
+    RESERVE_GPIO( UPDI, UPDI_PORT, UPDI_PIN, PID_UART2_TX);
+    RESERVE_GPIO( nWAKE, nWAKE_PORT, nWAKE_PIN, PID_GPIO);
 
 #if defined (CFG_SPI_FLASH_ENABLE)
     // SPI FLASH
@@ -115,13 +127,9 @@ static void set_pad_functions(void)
     GPIO_ConfigurePin(SPI_DI_PORT,  SPI_DI_PIN,  INPUT,  PID_SPI_DI,  false);
 #endif
 
-    // I2C
-    GPIO_ConfigurePin(I2C_SCL_PORT, I2C_SCL_PIN, INPUT_PULLUP, PID_I2C_SCL, false);
-    GPIO_ConfigurePin(I2C_SDA_PORT, I2C_SDA_PIN, INPUT_PULLUP, PID_I2C_SDA, false);
-    GPIO_ConfigurePin(I2C_INT_PORT, I2C_INT_PIN, INPUT, FUNC_GPIO, false);
-    GPIO_ConfigurePin(I2C_RESET_PORT, I2C_RESET_PIN, OUTPUT, FUNC_GPIO, true); // chip is reset on low
-
-
+    GPIO_ConfigurePin(UPDI_PORT,  UPDI_PIN, OUTPUT, PID_UART2_TX, false);
+    
+    GPIO_ConfigurePin(nWAKE_PORT,  nWAKE_PIN, INPUT, PID_GPIO,  false);
 }
 
 
@@ -137,6 +145,9 @@ void periph_init(void)
 
     // ROM patch
     patch_func();
+
+    uart_initialize(UART2, &uart_cfg);
+
 
     // Set pad functionality
     set_pad_functions();
@@ -156,11 +167,6 @@ void periph_init(void)
     }
 #endif
 
-    // We use i2c for GPIO on a MCP230008
-    i2c_init(&i2c_cfg);
-    GPIO_RegisterCallback(GPIO0_IRQn, ioexp_int_callback);
-
-
 #if defined (CFG_SPI_FLASH_ENABLE)
     spi_flash_configure_env(&spi_flash_cfg);
 
@@ -168,4 +174,10 @@ void periph_init(void)
     spi_initialize(&spi_cfg);
 #endif
 
+    // UPDI baud is autodetected (Max 225 Kbit when at default 4Mhz clock), with 2 stop bits and even parity
+    uart_one_wire_enable(UART2, UPDI_PORT, UPDI_PIN);
+
+    // Break and idle are special
+    // Break (held low) minimum duration = 24.6Ms
+    // Idle 
 }

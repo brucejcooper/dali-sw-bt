@@ -60,7 +60,7 @@
 // Service 1 of the custom server 1
 static const att_svc_desc128_t custs1_svc1                          = DEF_SVC1_UUID_128;
 
-static const uint8_t SVC1_TARGET_1_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_1_UUID_128;
+static const uint8_t SVC1_TARGET_1_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_USERROW_UUID_128;
 static const uint8_t SVC1_TARGET_2_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_2_UUID_128;
 static const uint8_t SVC1_TARGET_3_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_3_UUID_128;
 static const uint8_t SVC1_TARGET_4_UUID_128[ATT_UUID_128_LEN]     = DEF_SVC1_SWITCH_TARGET_4_UUID_128;
@@ -99,9 +99,9 @@ const struct attm_desc_128 custs1_att_db[CUSTS1_IDX_NB] =
     [SVC1_IDX_SVC]                        = {(uint8_t*)&att_decl_svc, ATT_UUID_128_LEN, PERM(WR, ENABLE), sizeof(custs1_svc1), sizeof(custs1_svc1), (uint8_t*)&custs1_svc1},
 
     // Switch 1 Characteristic
-    [SVC1_IDX_SWITCH_TARGET_1_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
-    [SVC1_IDX_SWITCH_TARGET_1_VAL]        = {SVC1_TARGET_1_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), DEF_SVC1_SWITCH_TARGET_1_CHAR_MAX_LEN, 1, &target1},
-    [SVC1_IDX_SWITCH_TARGET_1_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_SWITCH_TARGET_1_USER_DESC) - 1, sizeof(DEF_SVC1_SWITCH_TARGET_1_USER_DESC) - 1, (uint8_t*)DEF_SVC1_SWITCH_TARGET_1_USER_DESC},
+    [SVC1_IDX_USERROW_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},
+    [SVC1_IDX_USERROW_VAL]        = {SVC1_TARGET_1_UUID_128, ATT_UUID_128_LEN, PERM(RD, ENABLE) | PERM(WR, ENABLE) | PERM(WRITE_REQ, ENABLE), PERM(RI, ENABLE) | DEF_SVC1_USERROW_CHAR_MAX_LEN, 0, NULL}, // 1, &target1},
+    [SVC1_IDX_USERROW_USER_DESC]  = {(uint8_t*)&att_desc_user_desc, ATT_UUID_16_LEN, PERM(RD, ENABLE), sizeof(DEF_SVC1_USERROW_USER_DESC) - 1, sizeof(DEF_SVC1_USERROW_USER_DESC) - 1, (uint8_t*)DEF_SVC1_USERROW_USER_DESC},
 
     // Switch 2 Characteristic
     [SVC1_IDX_SWITCH_TARGET_2_CHAR]       = {(uint8_t*)&att_decl_char, ATT_UUID_16_LEN, PERM(RD, ENABLE), 0, 0, NULL},

@@ -28,8 +28,8 @@ add_executable(${PROJECT_NAME}
     src/user_custs1_def.c
     src/user_periph_setup.c
     # src/printf_gcc.c
+    src/updi.c
     src/interrupts.c
-    src/buttons.c
     src/user_app.c
     src/ble_handlers.c
     src/user_app.c

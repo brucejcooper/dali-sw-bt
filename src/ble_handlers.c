@@ -4,6 +4,7 @@
 #include <da1458x_config_advanced.h>
 #include <user_config.h>
 #include <rwip_config.h>
+#include "prf_utils.h"
 
 #include <ke_msg.h>
 #include <custs1.h>
@@ -12,9 +13,11 @@
 #include <user_custs1_def.h>
 #include <gapm_task.h>
 #include <gapc_task.h>
+#include "updi.h"
+#include "user_app.h"
 
 #include <debug.h>
-/*
+
 static const char* msgidToString(ke_msg_id_t msgid)
 {
     const char* result = NULL;
@@ -110,25 +113,92 @@ static const char* msgidToString(ke_msg_id_t msgid)
     }
     return result;
 }
-*/
+
+
+void user_svc1_read_userrow(ke_msg_id_t const msgid,
+                            struct custs1_value_req_ind const *param,
+                            ke_task_id_t const dest_id,
+                            ke_task_id_t const src_id)
+{
+    struct custs1_value_req_rsp *rsp = KE_MSG_ALLOC_DYN(CUSTS1_VALUE_REQ_RSP,
+                                                        prf_get_task_from_id(TASK_ID_CUSTS1),
+                                                        TASK_APP,
+                                                        custs1_value_req_rsp,
+                                                        32);
+    // Provide the connection index.
+    rsp->conidx  = app_env[param->conidx].conidx;
+    // Provide the attribute index.
+    rsp->att_idx = param->att_idx;
+
+
+    wdg_reload(200); // Give it up to 2000 ms to read the value.
+    rsp->length  = 32;
+    updi_err_t err = updi_read_user_row(rsp->value);
+    if (err) {
+        DEBUG_PRINT_STRING("Error fetching UPDI ");
+        DEBUG_PRINT_INT(err);
+        DEBUG_PRINT_STRING("\r\n");
+        rsp->length = 0;
+        rsp->status  = ATT_ERR_APP_ERROR;
+    } else {
+        rsp->status  = ATT_ERR_NO_ERROR;
+    }
+
+    // Send message
+    ke_msg_send(rsp);
+}
 
 
 void user_catch_rest_hndl(ke_msg_id_t const msgid, void const *param, ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
     switch(msgid)
     {
+        case CUSTS1_VALUE_REQ_IND:
+        {
+            struct custs1_value_req_ind const *msg_param = (struct custs1_value_req_ind const *)(param);
+            switch (msg_param->att_idx) {
+                case SVC1_IDX_USERROW_VAL:
+                {
+                    user_svc1_read_userrow(msgid, msg_param, dest_id, src_id);
+                } 
+                break;
+
+                default:
+                {
+                    // Send Error message
+                    struct custs1_value_req_rsp *rsp = KE_MSG_ALLOC(CUSTS1_VALUE_REQ_RSP,
+                                                                    src_id,
+                                                                    dest_id,
+                                                                    custs1_value_req_rsp);
+
+                    // Provide the connection index.
+                    rsp->conidx  = app_env[msg_param->conidx].conidx;
+                    // Provide the attribute index.
+                    rsp->att_idx = msg_param->att_idx;
+                    // Force current length to zero.
+                    rsp->length = 0;
+                    // Set Error status
+                    rsp->status  = ATT_ERR_APP_ERROR;
+                    // Send message
+                    ke_msg_send(rsp);
+                } 
+                break;
+            }
+        }
+        break;
+
+        
         default:
         {
             // We are receiving a Generic Task Layer handler mssg. 
-            // char *msg = (char *) msgidToString(msgid);
-            // if (msg) {
-            //     DEBUG_PRINT_STRING("handler: ");
-            //     DEBUG_PRINT_STRING(msg);
-            // } else {
-                DEBUG_PRINT_STRING("handler: ");
+            char *msg = (char *) msgidToString(msgid);
+            DEBUG_PRINT_STRING("handler: ");
+            if (msg) {
+                DEBUG_PRINT_STRING(msg);
+            } else {
                 DEBUG_PRINT_INT(msgid);
-                DEBUG_PRINT_STRING("\r\n");
-            // }
+            }
+            DEBUG_PRINT_STRING("\r\n");
 
             break;
         }
@@ -139,10 +209,24 @@ void user_on_connection(uint8_t connection_idx, struct gapc_connection_req_ind c
 {
     DEBUG_PRINT_STRING("user_on_connection()\r\n");
     default_app_on_connection(connection_idx, param);
+
+
+    updi_send_break();
+    updi_sib_t sib;
+    updi_err_t err = updi_get_sib(&sib);
+    if (err) {
+        DEBUG_PRINT_STRING("Error getting SIB\r\n");
+    }
+    DEBUG_PRINT_STRING("SIB ");
+    DEBUG_PRINT_STRING((char *) &sib);
+    DEBUG_PRINT_STRING("\r\n");
+
 }
 
 void user_on_disconnect( struct gapc_disconnect_ind const *param )
 {
     DEBUG_PRINT_STRING("user_on_disconnect()\r\n");
     default_app_on_disconnect(param);
+
+    updi_reset_device();
 }
